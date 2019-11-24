@@ -1,3 +1,28 @@
+<?php
+    require_once('db_connect.php');
+    session_start();
+    if( isset($_POST['caller_id']) )
+    {
+        $caller_id = $_POST['caller_id'];
+        $ivr_list = $_POST['ivr_list'];
+
+        $offset = 0;
+        $tick = 0;
+        $offset_time = date('Y-m-d H:i:s',time() + $offset);
+
+        $sql = sprintf("insert into call_settings (number, cid, amount_done, amount_planned, context, last_call) 
+                                values ('%s', '%s', '%s', '%s', '%s', '%s')",
+                                $caller_id, '', 0, 1, $ivr_list, date("Y-m-d H:i:s",strtotime($offset_time)));
+
+        global $db_conn;
+        $db_conn->query($sql);
+
+        $db_conn->close();
+
+        $_SESSION["success"] = "Call in progress , try and retrieve after this closes";
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,6 +98,7 @@
             }
         </style>
 
+
         <div class="container">
             <div class="row">
                 <div class="col-md-3">        
@@ -97,6 +123,14 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Dashboard</div>
                         <div class="panel-body">
+                            <div class="alert alert-success"> 
+                                <?php 
+                                    if( isset($_SESSION['success']) )
+                                    {
+                                        echo $_SESSION["success"];
+                                    }
+                                ?>    
+                            </div>
                             <form method="POST" action="autodial.php" accept-charset="UTF-8"><input name="_token" type="hidden" value="xh5QvXlnsHNGmAH1q91qOpRIChLAhTRrmWpximLW">                        
                                 <div class="col-md-4">
                                     <label for="caller_id" class="control-label">Call To:</label>
@@ -151,7 +185,7 @@
                         form_data.append('_token', 'xh5QvXlnsHNGmAH1q91qOpRIChLAhTRrmWpximLW');
                         
                         $.ajax({
-                            url: "http://192.168.2.116:8901/retrieveinfo", 
+                            url: "retrieveinfo", 
                             data: form_data,
                             type: 'POST',
                             contentType: false,
@@ -167,7 +201,45 @@
                         });
                 });
             });
-        </script>        
+        </script>       
+    <?php
+        if( isset($_SESSION['success']) )
+        {        
+    ?>
+        <script>
+            let timerInterval
+            Swal.fire({
+                title: '<?php echo $_SESSION["success"] ?>',
+                timer: 7000,
+                onBeforeOpen: () => {
+                    Swal.showLoading()
+                    timerInterval = setInterval(() => {
+                    Swal.getContent().querySelector('b')
+                        .textContent = Swal.getTimerLeft()
+                    }, 100)
+                },
+                onClose: () => {
+                    clearInterval(timerInterval)
+                }
+                }).then((result) => {
+                    if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.timer
+                    ) {
+                        console.log('I was closed by the timer')
+                    }
+                });
+
+        </script>
+    <?php
+            unset($_SESSION['success']);
+        }
+        else
+        {
+            
+        }
+    ?>
+
     </div>
 </body>
 </html>
