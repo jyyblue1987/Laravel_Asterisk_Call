@@ -123,14 +123,17 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Dashboard</div>
                         <div class="panel-body">
+                        <?php 
+                            if( isset($_SESSION['success']) )
+                            {
+                        ?>        
                             <div class="alert alert-success"> 
-                                <?php 
-                                    if( isset($_SESSION['success']) )
-                                    {
-                                        echo $_SESSION["success"];
-                                    }
-                                ?>    
-                            </div>
+                                <?php echo $_SESSION["success"]; ?>
+                            </div>    
+                        <?php 
+                            }
+                        ?>    
+                            
                             <form method="POST" action="autodial.php" accept-charset="UTF-8"><input name="_token" type="hidden" value="xh5QvXlnsHNGmAH1q91qOpRIChLAhTRrmWpximLW">                        
                                 <div class="col-md-4">
                                     <label for="caller_id" class="control-label">Call To:</label>
