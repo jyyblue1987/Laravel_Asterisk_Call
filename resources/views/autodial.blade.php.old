@@ -1,0 +1,93 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">Dashboard</div>
+
+                <div class="panel-body">
+                    @if (session('status'))
+                        <div class="alert alert-success">
+                            {{ session('status') }}
+                        </div>
+						
+                    @endif
+					{!! Form::open(['action'=>'AutoDialController@store', 'files'=>true]) !!}
+					<input type="hidden" name="_token" value="{{ csrf_token() }}">
+					<div class="col-md-4">
+					{!! Form::label('Numbers', 'Numbers to call:', ['class' => 'control-label']) !!}
+					<input type="file" id="numbers" name="numbers" class="form-control" required="required">
+
+                    {!! Form::label('caller_id', 'Caller ID:', ['class' => 'control-label']) !!}
+                    {!! Form::text('caller_id', '' , ['class' => 'form-control']) !!}
+
+                    {!! Form::label('ivr_duration', 'IVR Duration, sec.:', ['class' => 'control-label']) !!}
+                    {!! Form::text('ivr_duration', '' , ['class' => 'form-control']) !!}
+
+                    {!! Form::label('simultaneous_calls', 'Simultaneous Calls:', ['class' => 'control-label']) !!}
+                    {!! Form::text('simultaneous_calls', '' , ['class' => 'form-control']) !!}
+                    
+					<hr>
+					{!! Form::submit('Call', ['class' => 'btn btn-lg btn-primary']) !!}
+					 <a class="btn btn-primary btn-sm btn-danger" href="{{ URL::to('home/deleteall') }}"><i class="fa fa-trash"></i> Stop All</a>
+					</div>
+					</form>
+					        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker2').datetimepicker({
+                    locale: 'ru',
+					defaultDate:new Date()
+                });
+				$('#datetimepicker3').datetimepicker({
+                    locale: 'ru',
+                			defaultDate:new Date('01.01.2028 02:00')
+                });
+            });
+        </script>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div class="row">
+	        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">Active Calls</div>
+
+                <div class="panel-body">
+	        <div class="table-scrollable">
+			    <table class="table table-striped table-bordered table-hover">
+    		    <thead>
+			    <tr>
+		<th>N</th>
+                   <th>number</th>
+           	       <th>Next Call</th>
+                   <th>Actions</th>
+        	    </tr>
+			    </thead>
+    		    <tbody>
+    		    <?php $i = 0 ?>
+    		    @foreach($callsettings as $key => $value)
+    		    <?php $i++ ?>
+        	    <tr>
+        	    <td>{{ $i }}</i>
+            	  <td>{{ $value->number }}</td>
+                  <td>{{ $value->last_call }}</td>
+		  <td>
+			<a class="btn btn-primary btn-sm btn-danger" href="{{ URL::to('home/delete/'.$value->id) }}"><i class="fa fa-trash"></i> Stop</a>
+		  </td>
+   	          </td>
+        	    </tr>
+    		    @endforeach
+    		    </tbody>
+			    </table>
+				
+			</div>
+			</div>
+			</div>
+		</div>
+		<div>
+		</div>
+</div>
+@endsection

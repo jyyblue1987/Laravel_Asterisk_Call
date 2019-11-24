@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\CallSettings;
+use Illuminate\Support\Facades\Input;
+
+class AutoDialController extends Controller
+{
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    /**
+     * Show the application dashboard.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+    $callsettings = CallSettings::all();
+    //return $callsettings;
+        return view('autodial')
+    ->with('callsettings',$callsettings);
+    }
+
+    public function store(Request $request)
+    {
+           if($request->hasFile('numbers')) 
+             {
+                //$upload=$request->file('upload-file');
+                //$filePath=$upload->getRealPath();
+                //$file=fopen($filePath,'r');
+
+
+                $file = Input::file('numbers');
+                //getting timestamp
+            
+                $filename = $file->getClientOriginalName();
+                $filePath = $file->getRealPath();
+
+                //$file->move(public_path());
+
+                $lines = file($filePath);
+
+                //print_r($lines);
+
+                $offset = 0;
+                $tick = 0;
+                $offset_time = date('Y-m-d H:i:s',time() + $offset);
+              foreach ($lines as $line_num => $line) {
+                    //echo "Строка #<b>{$line_num}</b> : " . htmlspecialchars($line) . "<br />\n";
+
+                    $newcall = new CallSettings;
+                    $newcall->number = trim($line);
+                    
+                    if ($tick == intval($request->simultaneous_calls)-1)
+                    {
+                        $tick = 0;
+                        $offset = $offset + $request->ivr_duration;
+                        $offset_time = date('Y-m-d H:i:s',time() + $offset);
+                    }
+                    else
+                    {
+                       $tick++;
+                    }
+                    
+
+                    //echo "tick=".$tick."-".$offset_time;
+                    //echo "</br>"; 
+                    $newcall->cid=$request->caller_id;
+                    $newcall->amount_done=0; 
+                    $newcall->amount_planned=1; 
+                    $newcall->context='ivr';  
+                    $newcall->last_call = date("Y-m-d H:i:s",strtotime($offset_time));
+                    $newcall->save();
+
+
+                }
+
+
+
+              }
+              
+              return redirect('autodial');
+    }
+
+      public function stopall()
+    {
+                CallSettings::truncate();
+                return redirect('autodial');
+    }
+}
