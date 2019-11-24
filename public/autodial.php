@@ -20,6 +20,9 @@
         $db_conn->close();
 
         $_SESSION["success"] = "Call in progress , try and retrieve after this closes";
+
+        header('Location: ' . 'autodial.php', true);
+        exit();
     }
 ?>
 
